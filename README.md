@@ -14,9 +14,9 @@ Farming System
 Shop + Inventory
 ซื้อของ
 เก็บของในกระเป๋า
-popup UI (ง่าย ๆ ใช้ Swing)
+popup UI 
 
-4.ชื่อ พงษ์กร นรสิงห์ 6721601354
+4.ชื่อ พงษ์กร นรสิงห์ 6721601354 
 Game + UI + Loop
 Game loop
 วาดหน้าจอ (Java Swing / JPanel)
