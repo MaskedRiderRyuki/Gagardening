@@ -22,7 +22,7 @@ public class Gamepanel extends JFrame implements KeyListener {
 
     public Gamepanel() {
         setTitle("GAGAR Dening");
-        ImageIcon icon = new ImageIcon("Picture/Piture.jpg");
+        ImageIcon icon = new ImageIcon("minipro.software/picture/Piture.jpg");
         setIconImage(icon.getImage());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -92,12 +92,7 @@ public class Gamepanel extends JFrame implements KeyListener {
                     g.drawRect(x,y,Grass,Grass);
                 }
             }
-            g.drawImage(
-                playerImage,
-                playerX,
-                playerY,
-                40,
-                40,
+            g.drawImage(playerImage,playerX,playerY,40,40,
                 this
             );
         }
@@ -111,27 +106,33 @@ public class Gamepanel extends JFrame implements KeyListener {
         // จำตำแหน่งก่อนเดิน
             lastX = playerX;
             lastY = playerY;
-
             // W = ขึ้น
-            if (e.getKeyCode() == KeyEvent.VK_W) {
-                playerY -= Grass;
+            if (e.getKeyCode() == KeyEvent.VK_W ) {
+                if ( playerY - 20 >= 0) {
+                    playerY -= 20;
+                }
             }
-
             // S = ลง
-            if (e.getKeyCode() == KeyEvent.VK_S) {
-                playerY += Grass;
+            if (e.getKeyCode() == KeyEvent.VK_S ) {
+                if (playerY  + 20 <= ROWS * Grass - 40) {
+                    playerY += 20;
+                }
             }
 
             // A = ซ้าย
-            if (e.getKeyCode() == KeyEvent.VK_A) {
-                playerX -= Grass;
+            if (e.getKeyCode() == KeyEvent.VK_A ) {
+                if (playerX - 20 >= 0) {
+                    playerX -= 20;
+                }
             }
 
             // D = ขวา
-            if (e.getKeyCode() == KeyEvent.VK_D) {
-                playerX += Grass;
+            if (e.getKeyCode() == KeyEvent.VK_D ) {
+                if (playerX + 20 <= COLS * Grass - 40) {
+                     playerX += 20;
+                }
             }
-
+        
             // วาดใหม่
             repaint();
     }

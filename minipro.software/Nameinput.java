@@ -7,7 +7,7 @@ public class Nameinput extends JFrame  {
     public  Nameinput() {
        setTitle("GAGAR" +" "+ "Dening");
         setSize(1024, 800);
-        ImageIcon icon = new ImageIcon("Picture/Piture.jpg");
+        ImageIcon icon = new ImageIcon("minipro.software/picture/Piture.jpg");
         setIconImage(icon.getImage());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);

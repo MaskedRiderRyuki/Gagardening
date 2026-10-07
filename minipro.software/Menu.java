@@ -8,7 +8,7 @@ public class Menu extends JFrame implements ActionListener {
        public Menu(){
         setTitle("GAGAR" +" "+ "Dening");
         setSize(1024, 800);
-        ImageIcon icon = new ImageIcon("Picture/Piture.jpg");
+        ImageIcon icon = new ImageIcon("minipro.software/picture/Piture.jpg");
         setIconImage(icon.getImage());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -66,7 +66,7 @@ public class Menu extends JFrame implements ActionListener {
         });
         add(EixtButton);
 
-        ImageIcon icon2 = new ImageIcon("Picture/Gamename.png");//ชื่อเกมหน้าเมนู
+        ImageIcon icon2 = new ImageIcon("minipro.software/picture/Gamename.png");//ชื่อเกมหน้าเมนู
         Image img = icon2.getImage();
         Image scaled = img.getScaledInstance(550, 200, Image.SCALE_SMOOTH);//ทำให้รูปพอดีจอ
         JLabel background1 = new JLabel(new ImageIcon(scaled));
