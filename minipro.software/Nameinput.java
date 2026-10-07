@@ -38,7 +38,7 @@ public class Nameinput extends JFrame  {
         });
         add(Submit);
 
-        ImageIcon blackgroudgame2 = new ImageIcon("Picture/blackgroudgame2.jpg");//พื้นหลัง
+        ImageIcon blackgroudgame2 = new ImageIcon("minipro.software/picture/blackgroudgame2.jpg");//พื้นหลัง
         JLabel background = new JLabel(blackgroudgame2);
         background.setBounds(0, 0, 1024, 800);
         add(background);
