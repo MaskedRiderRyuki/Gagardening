@@ -1,7 +1,8 @@
 import java.awt.*;
 import javax.swing.*;
+import java.awt.event.*;
 
-public class Gamepanel extends JFrame {
+public class Gamepanel extends JFrame implements KeyListener {
     // จำนวนแถวและคอลัมน์
     final int ROWS = 15;
     final int COLS = 15;
@@ -9,20 +10,40 @@ public class Gamepanel extends JFrame {
     final int Grass = 40;
     // 0 = หญ้า 1 = ถนน
     int[][] road = new int[ROWS][COLS];
+
+    // ตำแหน่งตัวละคร
+    int playerX = 40;
+    int playerY = 40;
+    // จำตำแหน่งล่าสุด
+    int lastX = playerX;
+    int lastY = playerY;
+    // รูปตัวละคร
+    Image playerImage;
+
     public Gamepanel() {
         setTitle("GAGAR Dening");
-         ImageIcon icon = new ImageIcon("Picture/Piture.jpg");
+        ImageIcon icon = new ImageIcon("Picture/Piture.jpg");
         setIconImage(icon.getImage());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setFocusable(true);
+        addKeyListener(this);
+        // ป้องกัน Tab แย่ง Focus
+        setFocusTraversalKeysEnabled(false);
 
         createroad();// กำหนดตำแหน่งถนน
         roadPanel roadPanel = new roadPanel();// สร้างพื้นที่สำหรับวาดถนน
         add(roadPanel);
+        // โหลดรูปตัวละคร
+        playerImage = new ImageIcon(
+            "minipro.software/picture/character.png"
+        ).getImage();
         pack();// ให้เฟรมปรับขนาดตาม JPanel
         setLocationRelativeTo(null);
         setResizable(false);
         setVisible(true);
+        
+
     }
     public void createroad() {
         // ถนนแนวตั้ง
@@ -71,6 +92,51 @@ public class Gamepanel extends JFrame {
                     g.drawRect(x,y,Grass,Grass);
                 }
             }
+            g.drawImage(
+                playerImage,
+                playerX,
+                playerY,
+                40,
+                40,
+                this
+            );
         }
+    }
+    @Override
+    public void keyTyped(KeyEvent e) {
+        
+    }
+    @Override
+    public void keyPressed(KeyEvent e) {
+        // จำตำแหน่งก่อนเดิน
+            lastX = playerX;
+            lastY = playerY;
+
+            // W = ขึ้น
+            if (e.getKeyCode() == KeyEvent.VK_W) {
+                playerY -= Grass;
+            }
+
+            // S = ลง
+            if (e.getKeyCode() == KeyEvent.VK_S) {
+                playerY += Grass;
+            }
+
+            // A = ซ้าย
+            if (e.getKeyCode() == KeyEvent.VK_A) {
+                playerX -= Grass;
+            }
+
+            // D = ขวา
+            if (e.getKeyCode() == KeyEvent.VK_D) {
+                playerX += Grass;
+            }
+
+            // วาดใหม่
+            repaint();
+    }
+    @Override
+    public void keyReleased(KeyEvent e) {
+        
     }
 }
