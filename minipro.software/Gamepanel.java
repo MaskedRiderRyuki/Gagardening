@@ -3,6 +3,306 @@ import javax.swing.*;
 import java.awt.event.*;
 
 public class Gamepanel extends JFrame implements KeyListener {
+
+    // จำนวนแถวและคอลัมน์
+    final int ROWS = 15;
+    final int COLS = 15;
+
+    // ขนาดแต่ละช่อง
+    final int Grass = 40;
+
+    // จำว่าช่องไหนถูกขุดแล้ว
+    boolean[][] tilled = new boolean[ROWS][COLS];
+
+    // 0 = หญ้า
+    // 1 = ถนน
+    int[][] road = new int[ROWS][COLS];
+
+    // ตำแหน่งตัวละคร
+    int playerX = 40;
+    int playerY = 40;
+
+    // จำตำแหน่งล่าสุด
+    int lastX = playerX;
+    int lastY = playerY;
+
+    // รูปตัวละคร
+    Image playerImage;
+
+
+    public Gamepanel() {
+
+        setTitle("GAGAR Dening");
+
+        ImageIcon icon = new ImageIcon("Picture/Piture.jpg");
+        setIconImage(icon.getImage());
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        setLocationRelativeTo(null);
+
+        setFocusable(true);
+
+        addKeyListener(this);
+
+        // ป้องกัน Tab แย่ง Focus
+        setFocusTraversalKeysEnabled(false);
+
+
+        // สร้างถนน
+        createroad();
+
+
+        // สร้างพื้นที่สำหรับวาดเกม
+        roadPanel roadPanel = new roadPanel();
+
+        add(roadPanel);
+
+
+        // โหลดรูปตัวละคร
+        playerImage = new ImageIcon(
+            "minipro.software/picture/character.png"
+        ).getImage();
+
+
+        // ปรับขนาดหน้าต่าง
+        pack();
+
+        setLocationRelativeTo(null);
+
+        setResizable(false);
+
+        setVisible(true);
+
+        // ให้หน้าต่างรับปุ่มทันที
+        requestFocusInWindow();
+    }
+
+
+    public void createroad() {
+
+        // ถนนแนวตั้ง
+        for (int row = 0; row < 8; row++) {
+
+            road[row][4] = 1;
+        }
+
+
+        // ถนนแนวนอน
+        for (int col = 4; col < 12; col++) {
+
+            road[6][col] = 1;
+        }
+
+
+        // ถนนแนวตั้งด้านขวา
+        for (int row = 6; row < 12; row++) {
+
+            road[row][9] = 1;
+        }
+    }
+
+
+    // JPanel สำหรับวาดเกม
+    class roadPanel extends JPanel {
+
+        public roadPanel() {
+
+            setPreferredSize(
+                new Dimension(
+                    COLS * Grass,
+                    ROWS * Grass
+                )
+            );
+        }
+
+
+        @Override
+        protected void paintComponent(Graphics g) {
+
+            super.paintComponent(g);
+
+
+            // วาด 15 x 15 ช่อง
+            for (int row = 0; row < ROWS; row++) {
+
+                for (int col = 0; col < COLS; col++) {
+
+                    int x = col * Grass;
+                    int y = row * Grass;
+
+
+                    // =========================
+                    // ช่องที่ถูกขุดแล้ว
+                    // =========================
+
+                    if (tilled[row][col]) {
+
+                        // ดิน
+                        g.setColor(
+                            new Color(100, 70, 40)
+                        );
+                    }
+
+
+                    // =========================
+                    // ช่องหญ้า
+                    // =========================
+
+                    else if (road[row][col] == 0) {
+
+                        // สีเขียว
+                        g.setColor(
+                            new Color(120, 200, 140)
+                        );
+                    }
+
+
+                    // =========================
+                    // ช่องถนน
+                    // =========================
+
+                    else if (road[row][col] == 1) {
+
+                        // สีน้ำตาล
+                        g.setColor(
+                            new Color(110, 80, 60)
+                        );
+                    }
+
+
+                    // วาดช่อง
+                    g.fillRect(
+                        x,
+                        y,
+                        Grass,
+                        Grass
+                    );
+
+
+                    // เส้นแบ่งช่อง
+                    g.setColor(
+                        new Color(0, 0, 0, 30)
+                    );
+
+                    g.drawRect(
+                        x,
+                        y,
+                        Grass,
+                        Grass
+                    );
+                }
+            }
+
+
+            // =========================
+            // วาดตัวละคร
+            // =========================
+
+            g.drawImage(
+                playerImage,
+                playerX,
+                playerY,
+                40,
+                40,
+                this
+            );
+        }
+    }
+
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+        // ระยะที่เดินต่อ 1 ครั้ง
+        int speed = 10;
+
+        // W = ขึ้น
+        if (e.getKeyCode() == KeyEvent.VK_W) {
+            if (playerY - speed >= 0) {
+                playerY -= speed;
+            }
+        }
+
+        // S = ลง
+        if (e.getKeyCode() == KeyEvent.VK_S) {
+            if (playerY + speed <= ROWS * Grass - 40) {
+                playerY += speed;
+            }
+        }
+
+        // A = ซ้าย
+        if (e.getKeyCode() == KeyEvent.VK_A) {
+            if (playerX - speed >= 0) {
+                playerX -= speed;
+            }
+        }
+
+        // D = ขวา
+        if (e.getKeyCode() == KeyEvent.VK_D) {
+            if (playerX + speed <= COLS * Grass - 40) {
+                playerX += speed;
+            }
+        }
+
+
+        // =========================
+        // E = ขุดดิน
+        // =========================
+
+        if (e.getKeyCode() == KeyEvent.VK_E) {
+
+            // หาว่าผู้เล่นอยู่ช่องไหน
+            int playerCol = playerX / Grass;
+            int playerRow = playerY / Grass;
+
+
+            // ตรวจว่าผู้เล่นอยู่ในแผนที่หรือไม่
+            if (playerRow >= 0 && playerRow < ROWS && playerCol >= 0 && playerCol < COLS) {
+                // =========================
+                // ขุดได้เฉพาะช่องสีเขียว
+                // =========================
+                if (road[playerRow][playerCol] == 0) {
+
+                    // เปลี่ยนช่องนี้เป็นดิน
+                    tilled[playerRow][playerCol] = true;
+
+                    System.out.println(
+                        "ขุดดินแล้ว!"
+                    );
+                }
+                // =========================
+                // ถ้าเป็นถนน
+                // =========================
+                else {
+
+                    System.out.println("ตรงนี้ขุดไม่ได้!");
+                }
+            }
+        }
+
+
+        // วาดใหม่
+        repaint();
+    }
+
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
+}
+/*  import java.awt.*;
+import javax.swing.*;
+import java.awt.event.*;
+
+public class Gamepanel extends JFrame implements KeyListener {
     // จำนวนแถวและคอลัมน์
     final int ROWS = 15;
     final int COLS = 15;
@@ -140,4 +440,4 @@ public class Gamepanel extends JFrame implements KeyListener {
     public void keyReleased(KeyEvent e) {
         
     }
-}
+} */
