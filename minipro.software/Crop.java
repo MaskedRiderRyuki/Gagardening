@@ -33,26 +33,21 @@ public class Crop { // คลาสสำหรับเก็บข้อมู
     // เมธอดสำหรับตรวจสอบระยะการเติบโต
     // currentDay คือวันที่ปัจจุบันของเกม
     public int getStage(int currentDay) {
+    int elapsedDays = currentDay - plantedDay;
 
-        // คำนวณจำนวนวันที่ผ่านไปตั้งแต่ปลูก
-        int elapsedDays = currentDay - plantedDay;
-
-        // ยังไม่ถึงครึ่งหนึ่งของจำนวนวันที่ใช้โต
-        if (elapsedDays < growDays / 2) {
-            return 1; // ระยะที่ 1 : ต้นอ่อน
-
-        // ถึงครึ่งหนึ่งแล้ว แต่ยังไม่โตเต็มที่
-        } else if (elapsedDays < growDays) {
-            return 2; // ระยะที่ 2 : กำลังเติบโต
-
-        // ครบจำนวนวันที่กำหนดแล้ว
-        } else {
-            return 3; // ระยะที่ 3 : โตเต็มที่พร้อมเก็บเกี่ยว
-        }
+    if (elapsedDays < growDays / 4) {
+        return 1;
+    } else if (elapsedDays < growDays / 2) {
+        return 2;
+    } else if (elapsedDays < growDays) {
+        return 3;
+    } else {
+        return 4;
     }
+}
 
     // ตรวจสอบว่าผักพร้อมเก็บเกี่ยวหรือยัง
     public boolean isReadyToHarvest(int currentDay) {
-        return getStage(currentDay) == 3;
+        return getStage(currentDay) == 4;
     }
 }
