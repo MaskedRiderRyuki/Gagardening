@@ -1,4 +1,3 @@
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -6,9 +5,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.*;
 
 /**
- * หน้าร้านค้าแบบเรียบง่าย ใช้ปุ่ม/ป้ายของ Swing ธรรมดา ไม่มีการวาดเอง
+ * หน้าร้านค้า ใช้ปุ่ม/ป้ายของ Swing ธรรมดา 
  *   - แท็บ Buy Seeds (ซื้อเมล็ด) / Sell Produce (ขายผลผลิต)
  *   - แต่ละแถวมีปุ่ม Buy หรือ Sell 1 / Sell All
  *   - ปุ่ม Sell All Produce ขายผลผลิตทั้งหมดในครั้งเดียว (เมล็ดจะไม่ถูกขาย)
@@ -72,7 +72,7 @@ public class ShopPanel extends JPanel {
         top.add(tabs);
         add(top, BorderLayout.NORTH);
 
-        // ส่วนกลาง: รายการสินค้า (เลื่อนได้ถ้าเยอะ)
+        // ส่วนกลาง: รายการสินค้า
         list.setOpaque(false);
         JPanel holder = new JPanel(new BorderLayout());
         holder.setBackground(BG);
@@ -111,16 +111,41 @@ public class ShopPanel extends JPanel {
     }
 
     public void setIcon(Item item, Image image) {
-        icons.put(item.getName(), image);
+        icons.put(item.getName(), scaleIcon(image));
         refresh();
+    }
+
+    /** ใส่รูปทีเดียวหลายอัน key = ชื่อไอเทม เช่น "Carrot Seed" (เมล็ด), "Carrot" (ผลผลิต) */
+    public void setIcons(Map<String, Image> images) {
+        if (images == null) return;
+        for (Map.Entry<String, Image> e : images.entrySet()) {
+            if (e.getValue() != null) icons.put(e.getKey(), scaleIcon(e.getValue()));
+        }
+        refresh();
+    }
+
+    /** ย่อรูปเป็น 40x40 ครั้งเดียวตอนใส่ (ไม่ต้องย่อใหม่ทุกครั้งที่ refresh) */
+    private static Image scaleIcon(Image src) {
+        java.awt.image.BufferedImage out = new java.awt.image.BufferedImage(40, 40, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = out.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(src, 0, 0, 40, 40, null);
+        g.dispose();
+        return out;
     }
 
     /** เปิดร้านเป็น popup แบบ modal */
     public static void showDialog(Component parent, Player player, List<Item> stock) {
+        showDialog(parent, player, stock, null);
+    }
+
+    /** เปิดร้านพร้อมรูปไอเทม (icons: ชื่อไอเทม -> รูป) */
+    public static void showDialog(Component parent, Player player, List<Item> stock, Map<String, Image> icons) {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
         JDialog dialog = new JDialog(owner, "Shop", Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setUndecorated(true);
         ShopPanel panel = new ShopPanel(player, stock);
+        panel.setIcons(icons);
         panel.setOnClose(dialog::dispose);
         dialog.setContentPane(panel);
         dialog.pack();
@@ -205,13 +230,13 @@ public class ShopPanel extends JPanel {
 
     // ---------------------------------------------------------------- UI helpers
 
-    /** สร้างแถวสินค้า 1 แถว: ชื่อ(+รูป) | ราคา/จำนวนที่มี | ปุ่ม */
+    /** สร้างแถวสินค้า 1 แถว: */
     private JPanel buildRow(Item item) {
         int owned = player.getInventory().getCount(item);
         int price = buying ? item.getBuyPrice() : item.getSellPrice();
 
         Image img = icons.get(item.getName());
-        Icon icon = img == null ? null : new ImageIcon(img.getScaledInstance(40, 40, Image.SCALE_FAST));
+        Icon icon = img == null ? null : new ImageIcon(img);
         JLabel name = new JLabel(item.getName(), icon, SwingConstants.LEFT);
         name.setFont(name.getFont().deriveFont(Font.BOLD, 16f));
         name.setPreferredSize(new Dimension(190, 44));

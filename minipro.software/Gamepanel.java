@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Arrays;
-
 import javax.swing.*;
 
 public class Gamepanel extends JFrame implements KeyListener {
@@ -54,6 +53,23 @@ public class Gamepanel extends JFrame implements KeyListener {
     );
     Item selectedSeed = null;
 
+    // ===== ร้านค้า (ตึกอยู่มุมล่างขวา ปลายถนน) =====
+    // ต้องยืนติดตึกร้านถึงจะกด B เปิดร้านได้
+    final int SHOP_COL = 10;   // คอลัมน์ซ้ายสุดของตึก
+    final int SHOP_ROW = 10;  // แถวบนสุดของตึก
+    final int SHOP_W = 2;     // กว้าง (ช่อง)
+    final int SHOP_H = 2;     // สูง (ช่อง) รูปร้านเป็นสี่เหลี่ยมจัตุรัส เลยใช้ 3x3
+    // ===== บ้าน (มุมซ้ายบน) ต้องยืนที่บ้านถึงจะกด N นอนได้ =====
+    final int HOUSE_COL = 0;
+    final int HOUSE_ROW = 0;
+    final int HOUSE_W = 3;
+    final int HOUSE_H = 2;
+
+    Image shopImage;          // ถ้ามีไฟล์ picture/shop.png จะใช้รูปนี้ ไม่มีจะวาดร้านให้เอง
+    java.util.Map<String, Image> shopIcons = new java.util.HashMap<>();   // รูปสินค้าในร้าน
+    String message = "";      // ข้อความเตือนที่แถบ UI
+    javax.swing.Timer messageTimer;
+
     public Gamepanel() {
 
         setTitle("GAGAR Dening");
@@ -93,7 +109,18 @@ public class Gamepanel extends JFrame implements KeyListener {
         loadPlantImages("Corn", "Corn");
 
         for (int i = 0; i < 6; i++) {
-            houseImages[i] = new ImageIcon("minipro.software/picture/House/" + (i + 1) + ".png").getImage();
+            houseImages[i] = new ImageIcon("minipro.software/picture/house/" + (i + 1) + ".png").getImage();
+        }
+
+        // โหลดรูปร้าน (ไม่บังคับ) + รูปสินค้าในร้าน
+        java.io.File shopFile = new java.io.File("minipro.software/picture/shop.png");
+        if (shopFile.exists()) {
+            shopImage = new ImageIcon(shopFile.getPath()).getImage();
+        }
+        for (String crop : new String[]{"Carrot", "Potato", "Tomato", "Pumpkin", "Corn"}) {
+            Image[] imgs = plantImages.get(crop);
+            shopIcons.put(crop + " Seed", imgs[0]);   // เมล็ด = รูประยะที่ 1
+            shopIcons.put(crop, imgs[3]);             // ผลผลิต = รูประยะที่ 4
         }
 
         // ปรับขนาดหน้าต่าง
@@ -106,7 +133,9 @@ public class Gamepanel extends JFrame implements KeyListener {
        
 
         // B = เปิดร้านซื้อของ, H = เปิดกระเป๋า
-        GameHotkeys.install(getRootPane(), player, this.stock);
+        GameHotkeys.install(getRootPane(), player, this.stock, shopIcons,
+                this::isNearShop,
+                () -> showMessage("Go stand next to the SHOP to buy! (B)"));
 
         
 
@@ -127,6 +156,71 @@ public class Gamepanel extends JFrame implements KeyListener {
         }
 
         plantImages.put(name, images);
+    }
+
+    // ช่องที่เป็นตัวตึกร้าน (เดินทะลุไม่ได้)
+    private boolean isShopTile(int x, int y) {
+        int col = x / Grass;
+        int row = y / Grass;
+        return col >= SHOP_COL && col < SHOP_COL + SHOP_W
+            && row >= SHOP_ROW && row < SHOP_ROW + SHOP_H;
+    }
+
+    // ยืนติดร้านหรือยัง (ช่องที่ติดตึก รวมแนวทแยง)
+    private boolean isNearShop() {
+        int col = playerX / Grass;
+        int row = playerY / Grass;
+        return col >= SHOP_COL - 1 && col <= SHOP_COL + SHOP_W
+            && row >= SHOP_ROW - 1 && row <= SHOP_ROW + SHOP_H;
+    }
+
+    // ยืนที่บ้านหรือยัง (ในตัวบ้านหรือช่องที่ติดบ้าน)
+    private boolean isNearHouse() {
+        int col = playerX / Grass;
+        int row = playerY / Grass;
+        return col <= HOUSE_COL + HOUSE_W && row <= HOUSE_ROW + HOUSE_H;
+    }
+
+    // โชว์ข้อความที่แถบ UI 2 วินาที
+    private void showMessage(String text) {
+        message = text;
+        if (messageTimer != null) messageTimer.stop();
+        messageTimer = new javax.swing.Timer(2000, e -> { message = ""; repaint(); });
+        messageTimer.setRepeats(false);
+        messageTimer.start();
+        repaint();
+    }
+
+    // วาดตึกร้านค้า
+    private void drawShop(Graphics g, Component obs) {
+        int x = SHOP_COL * Grass;
+        int y = SHOP_ROW * Grass;
+        int w = SHOP_W * Grass;
+        int h = SHOP_H * Grass;
+
+        if (shopImage != null) {
+            g.drawImage(shopImage, x, y, w, h, obs);
+            return;
+        }
+
+        // ไม่มีรูป -> วาดร้านง่าย ๆ
+        g.setColor(new Color(196, 148, 92));          // ตัวร้าน
+        g.fillRect(x, y + 24, w, h - 24);
+        g.setColor(new Color(178, 58, 58));           // หลังคา
+        g.fillRect(x - 4, y, w + 8, 28);
+        g.setColor(Color.WHITE);
+        for (int i = 0; i < w + 8; i += 24) {         // ลายหลังคา
+            g.fillRect(x - 4 + i, y, 12, 28);
+        }
+        g.setColor(new Color(90, 60, 30));            // ประตู
+        g.fillRect(x + w / 2 - 14, y + h - 36, 28, 36);
+        g.setColor(new Color(60, 40, 20));            // ป้าย
+        g.fillRect(x + 8, y + 34, 44, 18);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 12));
+        g.drawString("SHOP", x + 12, y + 47);
+        g.setColor(Color.BLACK);
+        g.drawRect(x, y + 24, w, h - 24);
     }
 
     // ตรวจสอบและใช้พลังงาน
@@ -266,6 +360,7 @@ public class Gamepanel extends JFrame implements KeyListener {
             // ========================
             // วาดตัวละคร
             // ========================
+            drawShop(g, this);
             g.drawImage(playerImage,playerX,playerY,40,40,this);
 
             // ===== แถบ UI ด้านล่าง =====
@@ -311,8 +406,15 @@ public class Gamepanel extends JFrame implements KeyListener {
             // คำแนะนำปุ่มควบคุม
             g.setFont(new Font("Arial", Font.PLAIN, 12));
             g.drawString("WASD: Move   E: Dig / Harvest", 10, uiY + 45);
-            g.drawString("P: Plant   N: Next Day", 10, uiY + 63);
-            g.drawString("H: Inventory   B: Shop", 10, uiY + 81);
+            g.drawString("P: Plant   N: Sleep (at house)", 10, uiY + 63);
+            g.drawString("H: Inventory   B: Shop (stand next to it)", 10, uiY + 81);
+
+            // ข้อความเตือน
+            if (!message.isEmpty()) {
+                g.setColor(new Color(180, 30, 30));
+                g.setFont(new Font("Arial", Font.BOLD, 12));
+                g.drawString(message, 300, uiY + 75);
+            }
 
         }
     }
@@ -332,28 +434,28 @@ public class Gamepanel extends JFrame implements KeyListener {
 
         // W = ขึ้น
         if (e.getKeyCode() == KeyEvent.VK_W) {
-            if (playerY - speed >= 0) {
+            if (playerY - speed >= 0 && !isShopTile(playerX, playerY - speed)) {
                 playerY -= speed;
             }
         }
 
         // S = ลง
         if (e.getKeyCode() == KeyEvent.VK_S) {
-            if (playerY + speed <= ROWS * Grass - 40) {
+            if (playerY + speed <= ROWS * Grass - 40 && !isShopTile(playerX, playerY + speed)) {
                 playerY += speed;
             }
         }
 
         // A = ซ้าย
         if (e.getKeyCode() == KeyEvent.VK_A) {
-            if (playerX - speed >= 0) {
+            if (playerX - speed >= 0 && !isShopTile(playerX - speed, playerY)) {
                 playerX -= speed;
             }
         }
 
         // D = ขวา
         if (e.getKeyCode() == KeyEvent.VK_D) {
-            if (playerX + speed <= COLS * Grass - 40) {
+            if (playerX + speed <= COLS * Grass - 40 && !isShopTile(playerX + speed, playerY)) {
                 playerX += speed;
             }
         }
@@ -515,9 +617,13 @@ public class Gamepanel extends JFrame implements KeyListener {
 
         // N = นอน
         if (e.getKeyCode() == KeyEvent.VK_N) {
-            currentDay++;
-            restoreEnergy();
-            System.out.println("วันที่ " + currentDay);
+            if (!isNearHouse()) {
+                showMessage("Go to your HOUSE to sleep! (N)");
+            } else {
+                currentDay++;
+                restoreEnergy();
+                System.out.println("วันที่ " + currentDay);
+            }
         }
 
         // วาดใหม่
