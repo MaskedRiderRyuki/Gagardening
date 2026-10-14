@@ -61,8 +61,7 @@ public class Menu extends JFrame implements ActionListener {
         EixtButton.setFont(new Font("Monospaced", Font.BOLD, 26));//ฟอนต์ ขนาด
         EixtButton.setBounds(450, 600, 130, 50);
         //การกดปุ่ม Eixt
-        EixtButton.addActionListener(e -> {
-            System.exit(0);// ออกจากโปรแกรม
+        EixtButton.addActionListener(e -> {System.exit(0);// ออกจากโปรแกรม
         });
         add(EixtButton);
 
