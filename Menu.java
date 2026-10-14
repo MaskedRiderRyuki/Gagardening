@@ -1,0 +1,116 @@
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+
+public class Menu extends JFrame implements ActionListener {
+       public Menu(){
+        setTitle("GAGAR" +" "+ "Dening");
+        setSize(1024, 800);
+        ImageIcon icon = new ImageIcon("minipro.software/picture/Piture.jpg");
+        setIconImage(icon.getImage());
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        setLayout(null);
+
+        JLabel NameGameLabel = new JLabel("By"+" "+"Demon"+" "+"Dev.Team");
+        NameGameLabel.setBounds(850, 710, 200, 30);
+        add(NameGameLabel);
+
+        
+        JButton PlayButton = new JButton("Play");//ปุ่มเล่น
+        styleButton(PlayButton);
+        PlayButton.setBounds(450,400,130,50);
+        //การกดปุ่ม play
+        PlayButton.addActionListener(e -> {
+         java.io.File saveFile = new java.io.File("PlayerName.txt");// ตรวจสอบว่ามีไฟล์ตัวละครหรือยัง
+         if (saveFile.exists()) {
+                new Gamepanel();// มีตัวละครแล้ว -> เล่นต่อ
+                dispose();//ปิดหน้า menu
+            } else {
+                new Nameinput();// ยังไม่มีตัวละคร -> ไปตั้งชื่อ
+                dispose();//ปิดหน้า menu
+            }
+        });
+
+        add(PlayButton);
+
+        JButton NewGameButton = new JButton("New"+" "+"Game");//ปุ่มเกมใหม่
+        styleButton(NewGameButton);
+        NewGameButton.setBounds(450, 500, 130, 50);
+        //การกดปุ่ม New Game
+        NewGameButton.addActionListener(e ->{
+          java.io.File saveFile = new java.io.File("PlayerName.txt");// หาไฟล์ตัวละครเก่า
+          if(saveFile.exists()){// ถ้ามีตัวละครเก่า ให้ลบ
+            saveFile.delete();
+          }
+          new Nameinput();// ไปสร้างตัวละครใหม่
+          dispose();//ปิดหน้า menu
+        });
+        add(NewGameButton);
+
+        JButton EixtButton = new JButton("Eixt");//ปุ่มออก
+        styleButton(EixtButton);
+        EixtButton.setBounds(450, 600, 130, 50);
+        //การกดปุ่ม Eixt
+        EixtButton.addActionListener(e -> {
+            System.exit(0);// ออกจากโปรแกรม
+        });
+        add(EixtButton);
+
+        //ปุ่มวิธีเล่น
+        JButton HowToPlayButton = new JButton("How" + " " + "Play");//ปุ่มวิธีเล่น
+        styleButton(HowToPlayButton);
+        HowToPlayButton.setBounds(450, 700, 130, 50);
+        HowToPlayButton.addActionListener(e ->{
+            new HowPlay();
+            dispose();
+        });
+        add(HowToPlayButton);
+
+        ImageIcon icon2 = new ImageIcon("minipro.software/picture/Gamename.png");//ชื่อเกมหน้าเมนู
+        Image img = icon2.getImage();
+        Image scaled = img.getScaledInstance(550, 200, Image.SCALE_SMOOTH);//ทำให้รูปพอดีจอ
+        JLabel background1 = new JLabel(new ImageIcon(scaled));
+        background1.setBounds(220, 100, 550, 200);
+        add(background1);
+
+        ImageIcon blackgroudgame2 = new ImageIcon("minipro.software/picture/blackgroudgame2.jpg");//พื้นหลัง
+        JLabel background = new JLabel(blackgroudgame2);
+        background.setBounds(0, 0, 1024, 800);
+        add(background);
+        setVisible(true);
+       }
+
+       @Override
+       public void actionPerformed(ActionEvent e) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
+       }
+       private  void styleButton(JButton button) {
+       button.setBackground(new Color(70, 95, 75));
+       button.setForeground(Color.black);
+       button.setFont(new Font("Monospaced", Font.BOLD, 18));
+       button.setFocusPainted(false);
+       button.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
+       button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+       button.setOpaque(true);
+
+       Color hoverColor = new Color(95, 125, 95);
+       Color normalColor = new Color(70, 95, 75);
+
+       button.addMouseListener(new MouseAdapter() {
+        @Override
+        public void mouseEntered(MouseEvent e) {
+            button.setBackground(hoverColor);
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+            button.setBackground(normalColor);
+        }
+      });
+    }
+    }
+
