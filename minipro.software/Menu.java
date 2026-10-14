@@ -21,9 +21,7 @@ public class Menu extends JFrame implements ActionListener {
 
         
         JButton PlayButton = new JButton("Play");//ปุ่มเล่น
-        PlayButton.setBackground(new Color(140, 130, 123));//สีปุ่ม
-        PlayButton.setForeground(Color.black);
-        PlayButton.setFont(new Font("Monospaced", Font.BOLD, 26));//ฟอนต์ ขนาด
+        styleButton(PlayButton);
         PlayButton.setBounds(450,400,130,50);
         //การกดปุ่ม play
         PlayButton.addActionListener(e -> {
@@ -40,10 +38,9 @@ public class Menu extends JFrame implements ActionListener {
         add(PlayButton);
 
         JButton NewGameButton = new JButton("New"+" "+"Game");//ปุ่มเกมใหม่
-        NewGameButton.setBackground(new Color(140, 130, 123));//สีปุ่ม
-        NewGameButton.setForeground(Color.black);
-        NewGameButton.setFont(new Font("Monospaced", Font.BOLD, 20));//ฟอนต์ ขนาด
+        styleButton(NewGameButton);
         NewGameButton.setBounds(450, 500, 130, 50);
+
         //การกดปุ่ม New Game
         NewGameButton.addActionListener(e ->{
           java.io.File saveFile = new java.io.File("PlayerName.txt");// หาไฟล์ตัวละครเก่า
@@ -56,14 +53,23 @@ public class Menu extends JFrame implements ActionListener {
         add(NewGameButton);
 
         JButton EixtButton = new JButton("Eixt");//ปุ่มออก
-        EixtButton.setBackground(new Color(140,130,123));//สีปุ่ม
-        EixtButton.setForeground(Color.black);
-        EixtButton.setFont(new Font("Monospaced", Font.BOLD, 26));//ฟอนต์ ขนาด
+        styleButton(EixtButton);
         EixtButton.setBounds(450, 600, 130, 50);
+        
         //การกดปุ่ม Eixt
         EixtButton.addActionListener(e -> {System.exit(0);// ออกจากโปรแกรม
         });
         add(EixtButton);
+
+        //ปุ่มวิธีเล่น
+        JButton HowToPlayButton = new JButton("How" + " " + "Play");//ปุ่มวิธีเล่น
+        styleButton(HowToPlayButton);
+        HowToPlayButton.setBounds(450, 700, 130, 50);
+        HowToPlayButton.addActionListener(e ->{
+            new HowPlay();
+            dispose();
+        });
+        add(HowToPlayButton);
 
         ImageIcon icon2 = new ImageIcon("minipro.software/picture/Gamename.png");//ชื่อเกมหน้าเมนู
         Image img = icon2.getImage();
@@ -84,5 +90,29 @@ public class Menu extends JFrame implements ActionListener {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
        }
+       private  void styleButton(JButton button) {
+       button.setBackground(new Color(70, 95, 75));
+       button.setForeground(Color.black);
+       button.setFont(new Font("Monospaced", Font.BOLD, 18));
+       button.setFocusPainted(false);
+       button.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
+       button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+       button.setOpaque(true);
+
+       Color hoverColor = new Color(95, 125, 95);
+       Color normalColor = new Color(70, 95, 75);
+
+       button.addMouseListener(new MouseAdapter() {
+        @Override
+        public void mouseEntered(MouseEvent e) {
+            button.setBackground(hoverColor);
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+            button.setBackground(normalColor);
+        }
+      });
+    }
     }
 
