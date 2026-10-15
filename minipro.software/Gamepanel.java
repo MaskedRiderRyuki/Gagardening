@@ -44,12 +44,13 @@ public class Gamepanel extends JFrame implements KeyListener {
     // ผู้เล่น (เงิน + กระเป๋า) และของที่ร้านขาย ใช้กับปุ่ม B (ร้าน) / H (กระเป๋า)
     Player player = new Player(150);
 
+    //ราคา
     java.util.List<Item> stock = Arrays.asList(
-        new Item("Carrot Seed", 20, 0),
-        new Item("Potato Seed", 15, 0),
-        new Item("Tomato Seed", 30, 0),
-        new Item("Pumpkin Seed", 45, 0),
-        new Item("Corn Seed", 25, 0)
+        new Item("Carrot Seed", 5, 0),
+        new Item("Potato Seed", 7, 0),
+        new Item("Tomato Seed", 10, 0),
+        new Item("Pumpkin Seed", 17, 0),
+        new Item("Corn Seed", 7, 0)
     );
     Item selectedSeed = null;
 
@@ -459,6 +460,18 @@ public class Gamepanel extends JFrame implements KeyListener {
                 playerX += speed;
             }
         }
+        /*// Q = รดน้ำผักในช่องที่ตัวละครยืนอยู่
+        if (e.getKeyCode() == KeyEvent.VK_Q) {
+           int playerCol = playerX / Grass;
+           int playerRow = playerY / Grass;
+           Crop crop = crops[playerRow][playerCol];
+           if (crop == null) {
+        System.out.println("ช่องนี้ไม่มีผักให้รดน้ำ!");
+        } else {
+        crop.water(currentDay);
+        System.out.println("รดน้ำ " + crop.getName() + " แล้ว!");
+        }
+        }*/
 
         // เลือกเมล็ดที่จะปลูก
         if (e.getKeyCode() == KeyEvent.VK_1) {
@@ -636,3 +649,22 @@ public class Gamepanel extends JFrame implements KeyListener {
 
     }
 }
+// ป้องกันการเก็บเกี่ยวเมื่อกระเป๋าเต็ม
+/*Item produce = new Item(cropName, 0, sellPrice);
+
+if (!player.getInventory().canAddItem(produce, 1)) {
+    System.out.println("กระเป๋าเต็ม! ขายของบางส่วนก่อน");
+} else if (energy < 2) {
+    System.out.println("พลังงานไม่พอ! กด N เพื่อพักผ่อน");
+} else {
+    useEnergy(2);
+    player.getInventory().addItem(produce, 1);
+
+    crops[playerRow][playerCol] = null;
+
+    System.out.println("เก็บเกี่ยว " + cropName + " สำเร็จ!");
+    System.out.println("นำผลผลิตเข้ากระเป๋าแล้ว");
+
+    repaint();
+}
+ */

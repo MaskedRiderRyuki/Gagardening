@@ -34,7 +34,7 @@ public class Nameinput extends JFrame  {
         inputname.setFont(new Font("Monospaced", Font.BOLD, 20));
         add(inputname);
 
-        JLabel NameLabel = new JLabel("CARACTER"+" "+"NAME");
+        JLabel NameLabel = new JLabel("CHARACTER"+" "+"NAME");
         NameLabel.setBounds(400,250,300,50);
         NameLabel.setFont(new Font("Monospaced", Font.BOLD, 26));
         add(NameLabel);
