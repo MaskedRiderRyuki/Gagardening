@@ -1,5 +1,8 @@
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Map;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -69,6 +72,24 @@ public class PixelInventory {
         }
     }
  
+    // ---------- รูปไอคอนของไอเทม ----------
+    // เมล็ดและผลผลิตใช้รูปผลผลิต (ระยะที่ 4) ของพืชนั้น ๆ  เช่น "Carrot Seed" และ "Carrot" -> Plants/Carrot/4.png
+    private static final Map<String, Image> ICON_CACHE = new java.util.HashMap<>();
+
+    static Image iconFor(Item item) {
+        String name = item.getName();
+        String crop = name.endsWith(" Seed") ? name.substring(0, name.length() - 5) : name;
+        if (ICON_CACHE.containsKey(crop)) return ICON_CACHE.get(crop);
+
+        Image img = null;
+        java.io.File f = new java.io.File("minipro.software/picture/Plants/" + crop + "/4.png");
+        if (f.exists()) {
+            img = new ImageIcon(f.getPath()).getImage();
+        }
+        ICON_CACHE.put(crop, img);   // เก็บ null ไว้ด้วย จะได้ไม่ต้องหาไฟล์ซ้ำ
+        return img;
+    }
+
     /** ช่องเก็บของ 44x44 มี hover / selected */
     static class Slot extends BevelPanel {
         static Slot current;          // ช่องที่ถูกเลือกอยู่
@@ -124,18 +145,32 @@ public class PixelInventory {
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             int w = getWidth(), h = getHeight();
  
-            // ไอคอนชั่วคราว: สี่เหลี่ยมสีตามชื่อ + ตัวอักษรแรก (เปลี่ยนเป็นรูปจริงทีหลังได้)
-            float hue = ((item.getName().hashCode() & 0x7fffffff) % 360) / 360f;
-            int tile = s(26), x = (w - tile) / 2, y = s(6);
-            g2.setColor(Color.getHSBColor(hue, 0.55f, 0.85f));
-            g2.fillRoundRect(x, y, tile, tile, s(8), s(8));
-            g2.setColor(Color.WHITE);
-            g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, s(16)));
-            FontMetrics fm = g2.getFontMetrics();
-            String letter = item.getName().substring(0, 1).toUpperCase();
-            g2.drawString(letter, x + (tile - fm.stringWidth(letter)) / 2,
-                    y + (tile - fm.getHeight()) / 2 + fm.getAscent());
- 
+            Image icon = iconFor(item);
+            if (icon != null) {
+                // วาดรูปจริง ย่อให้พอดีช่อง รักษาสัดส่วนเดิม
+                int box = w - 2 * s(7);
+                int iw = icon.getWidth(null), ih = icon.getHeight(null);
+                if (iw > 0 && ih > 0) {
+                    double k = Math.min((double) box / iw, (double) box / ih);
+                    int dw = (int) Math.round(iw * k), dh = (int) Math.round(ih * k);
+                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    g2.drawImage(icon, (w - dw) / 2, (h - dh) / 2, dw, dh, null);
+                }
+            } else {
+                // ไม่มีรูป: ใช้สี่เหลี่ยมสี + ตัวอักษรแรกแทน
+                float hue = ((item.getName().hashCode() & 0x7fffffff) % 360) / 360f;
+                int tile = s(26), x = (w - tile) / 2, y = s(6);
+                g2.setColor(Color.getHSBColor(hue, 0.55f, 0.85f));
+                g2.fillRoundRect(x, y, tile, tile, s(8), s(8));
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, s(16)));
+                FontMetrics fm = g2.getFontMetrics();
+                String letter = item.getName().substring(0, 1).toUpperCase();
+                g2.drawString(letter, x + (tile - fm.stringWidth(letter)) / 2,
+                        y + (tile - fm.getHeight()) / 2 + fm.getAscent());
+            }
+
             // จำนวนมุมขวาล่าง (มีเงาให้อ่านง่าย)
             g2.setFont(new Font(Font.MONOSPACED, Font.BOLD, Math.max(8, s(11))));
             String n = count > 99 ? "99+" : String.valueOf(count);
@@ -161,13 +196,75 @@ public class PixelInventory {
         return p;
     }
  
+    /** ตัวละครพิกเซล (หมวกฟาง ชุดเอี๊ยมน้ำเงิน) วาดด้วยโค้ด ใช้เมื่อไม่มีไฟล์ character.png */
+    static void drawFallbackCharacter(Graphics g, int w, int h) {
+        // แต่ละแถว = 1 พิกเซลของตัวละคร ขนาด 12 x 16
+        String[] art = {
+            "....hhhh....",
+            "..hhhhhhhh..",
+            ".hhhhhhhhhh.",
+            "hhhhhhhhhhhh",
+            "...ssssss...",
+            "..sskssksss.",
+            "..ssssssss..",
+            "...ssmmss...",
+            "..bbbbbbbb..",
+            ".sbbbbbbbbs.",
+            ".sbbyybbbbs.",
+            ".sbbbbbbbbs.",
+            "..bbbbbbbb..",
+            "..bbb..bbb..",
+            "..bbb..bbb..",
+            "..ddd..ddd.."
+        };
+        int rows = art.length, cols = art[0].length();
+        int px = Math.max(1, Math.min((w - 2 * s(10)) / cols, (h - 2 * s(10)) / rows));
+        int ox = (w - cols * px) / 2, oy = (h - rows * px) / 2;
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                Color col;
+                switch (art[r].charAt(c)) {
+                    case 'h': col = new Color(0xf0c75e); break;   // หมวกฟาง
+                    case 's': col = new Color(0xf5cfa0); break;   // ผิว
+                    case 'k': col = new Color(0x2b1720); break;   // ตา
+                    case 'm': col = new Color(0xb4574b); break;   // ปาก
+                    case 'b': col = new Color(0x4a7fd1); break;   // เสื้อผ้า
+                    case 'y': col = new Color(0xffeb3b); break;   // กระดุม
+                    case 'd': col = new Color(0x4b2e2a); break;   // รองเท้า
+                    default:  continue;
+                }
+                g.setColor(col);
+                g.fillRect(ox + c * px, oy + r * px, px, px);
+            }
+        }
+    }
+
     static JPanel buildLeftPanel() {
         // คอลัมน์ช่องสวมใส่ซ้าย/ขวา
         JPanel leftCol = slotGrid(2, 1, 2);
         JPanel rightCol = slotGrid(2, 1, 2);
  
         // กล่องตัวละคร 80x100
-        BevelPanel character = new BevelPanel(SLOT_BG, BORDER_DARK, s(3), s(3), CHAR_SHADOW, SLOT_LIGHT);
+        final Image charImg = new ImageIcon("minipro.software/picture/character.png").getImage();
+        BevelPanel character = new BevelPanel(SLOT_BG, BORDER_DARK, s(3), s(3), CHAR_SHADOW, SLOT_LIGHT) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                int iw = charImg.getWidth(null), ih = charImg.getHeight(null);
+                if (iw <= 0 || ih <= 0) {          // หาไฟล์รูปไม่เจอ: วาดตัวละครพิกเซลด้วยโค้ดแทน
+                    drawFallbackCharacter(g, getWidth(), getHeight());
+                    return;
+                }
+                int box = Math.min(getWidth(), getHeight()) - 2 * s(10);
+                double k = Math.min((double) box / iw, (double) box / ih);
+                int dw = (int) Math.round(iw * k), dh = (int) Math.round(ih * k);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                        RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g2.drawImage(charImg, (getWidth() - dw) / 2, (getHeight() - dh) / 2, dw, dh, null);
+                g2.dispose();
+            }
+        };
         character.setPreferredSize(new Dimension(s(80), s(100)));
  
         // วางแบบ ช่อง | ตัวละคร | ช่อง (จัดกึ่งกลางแนวตั้ง)
@@ -254,17 +351,27 @@ public class PixelInventory {
     /** สร้างหน้าต่างกระเป๋าที่ใส่ของจาก player.getInventory() ลงช่องตามลำดับแล้ว */
     static JPanel buildBag(Player player) {
         JPanel window = buildGameWindow();
-        // กริดหลัก 6x4 อยู่ในพาเนลขวา ลำดับที่ 2 (ต่อจากป้าย INVENTORY)
-        JPanel mainGrid = (JPanel) ((JPanel) window.getComponent(1)).getComponent(1);
-        int i = 0;
+        JPanel right = (JPanel) window.getComponent(1);
+        // พาเนลขวา: 0 = ป้าย INVENTORY, 1 = กริดหลัก 6x4, 2 = hotbar (แถบดำด้านล่าง)
+        JPanel mainGrid = (JPanel) right.getComponent(1);
+        JPanel hotbar = (JPanel) right.getComponent(2);
+
+        int mainIdx = 0, hotIdx = 0;
         for (Map.Entry<Item, Integer> e : player.getInventory().getItems().entrySet()) {
-            if (i >= mainGrid.getComponentCount()) break;   // ช่องเต็ม 24 ช่อง
-            ((Slot) mainGrid.getComponent(i++)).setItem(e.getKey(), e.getValue());
+            Item item = e.getKey();
+            boolean isSeed = item.getName().endsWith("Seed");   // เมล็ดทุกชนิดไปอยู่ใน hotbar
+            if (isSeed && hotIdx < hotbar.getComponentCount()) {
+                ((Slot) hotbar.getComponent(hotIdx++)).setItem(item, e.getValue());
+            } else if (mainIdx < mainGrid.getComponentCount()) {
+                ((Slot) mainGrid.getComponent(mainIdx++)).setItem(item, e.getValue());
+            }
         }
-        ((Slot) mainGrid.getComponent(0)).select();
+        // เลือกช่องแรกของ hotbar ถ้ามีเมล็ด ไม่งั้นเลือกช่องแรกของกริดหลัก
+        Slot first = (Slot) (hotIdx > 0 ? hotbar.getComponent(0) : mainGrid.getComponent(0));
+        first.select();
         return window;
     }
- 
+
     /** เปิดกระเป๋าเป็น popup (modal) แสดงของใน player.getInventory() กด H หรือ Esc เพื่อปิด */
     public static void showDialog(Component parent, Player player) {
         Window owner = parent == null ? null : SwingUtilities.getWindowAncestor(parent);
